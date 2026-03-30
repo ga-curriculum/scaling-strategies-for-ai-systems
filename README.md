@@ -1,4 +1,4 @@
-# SCALING STRATEGIES FOR AI SYSTEMS
+# Scaling Strategies for AI Systems
 
 **Session Time:** 120 minutes
 
@@ -9,7 +9,7 @@
 2. Key Factors Influencing Scalability
 3. Configuring Horizontal and Vertical Scaling
 4. Assessing Trade-Offs (Cost vs. Performance)
-5. Lab: Container Build Challenge
+5. Lab: Scaling and Optimization Setup
 6. Wrap-Up and Reflection
 
 ---
@@ -31,7 +31,8 @@ By the end of this module, participants will be able to:
 | 1       | Key Factors in AI Scalability                 | 20                 |
 | 2       | Horizontal vs. Vertical Scaling Mechanisms    | 20                 |
 | 3       | Trade-offs: Cost, Performance, and Efficiency | 20                 |
-| 4       | Lab: Container Build Challenge                | 60                 |
+| 4       | Lab: Scaling and Optimization Setup           | 60                 |
+
 
 ---
 
@@ -44,8 +45,15 @@ Scaling an AI system is fundamentally different from scaling a traditional web a
 * **Inference Latency vs. Throughput:** Real-time AI (fraud detection) requires low latency, while batch processing (nightly recommendation updates) prioritizes throughput.
 * **Data Locality:** Moving gigabytes of data to compute nodes introduces network bottlenecks.
 
+### The Impact of Multi-Stage Docker Builds
+Multi-stage Docker builds are a key technique for AI workloads where the build environment (compiler, CUDA toolkit) is substantially larger than the runtime environment. This serves as a reliability improvement, not just a disk-space optimization. Smaller images pull faster from the registry, which reduces pod startup time. Consequently, the Horizontal Pod Autoscaler's (HPA) scale-up events can deliver relief faster during traffic spikes.
+
 ### Tool: `kubectl` (Observability)
-Before you can scale, you must understand your current resource bottlenecks. `kubectl` allows engineers to inspect real-time resource consumption on a Kubernetes cluster.
+Before you can scale, you must understand your current resource bottlenecks. `kubectl` allows engineers to inspect real-time resource consumption on a Kubernetes cluster. 
+
+> **Prerequisite Note:** The `kubectl top pods` command requires the Metrics Server to be installed and running. 
+> 
+> In a default Minikube cluster, you must enable it by running `minikube addons enable metrics-server` before attempting to view metrics.
 
 **Practical Example:**
 Using `kubectl top` to identify if an AI inference pod is maxing out its allocated CPU or Memory, signaling the need for scaling.
@@ -58,6 +66,8 @@ kubectl top nodes
 kubectl top pods --namespace ai-production
 
 ```
+
+
 
 ```mermaid
 graph TD
@@ -82,6 +92,17 @@ Once bottlenecks are identified, engineers must apply the correct scaling strate
 ### Tools: Kubernetes & Minikube
 
 Kubernetes automates these processes using the **Horizontal Pod Autoscaler (HPA)** and **Vertical Pod Autoscaler (VPA)**. Minikube provides a local environment to test these mechanisms safely before cloud deployment.
+
+### Vertical Pod Autoscaler (VPA) Modes
+The VPA operates in three modes:
+* **Off:** Provides recommendations only, without making changes.
+* **Initial:** Sets resources upon pod creation without causing restarts.
+* **Auto:** Evicts and restarts pods whenever recommendations change. 
+
+For AI workloads, `Initial` mode is often preferred. Using `Auto` mode can evict pods during active inference, which interrupts live requests.
+
+### Model Weight Loading and HPA Responsiveness
+Model startup latency plays a critical role in the effectiveness of the HPA. If a pod takes 2 minutes to load its weights, it remains effectively invisible to the HPA for those 2 minutes. The pod only passes the readiness probe after the weights are fully loaded, meaning the HPA's scale-up event provides no functional relief during that specific window. 
 
 **Practical Example:**
 Configuring a Kubernetes HPA to automatically scale an AI model's deployment based on CPU utilization. If the traffic spikes and CPU exceeds 70%, Kubernetes will provision more pods.
@@ -124,7 +145,7 @@ graph LR
 
 ---
 
-## 3. Objective 3: Assessing Trade-Offs (Cost vs. Performance)
+## 3. Assessing Trade-Offs (Cost vs. Performance)
 
 Automation is powerful, but unrestricted scaling leads to massive cloud bills. A reliability engineer must balance efficiency, cost, and performance across distributed environments.
 
@@ -154,11 +175,17 @@ resources:
 
 ---
 
-## 4. Lab: Container Build Challenge
+## 4. Lab: Scaling and Optimization Setup
 
-**Objective:** Containerise a web app using Docker to ensure consistent execution across environments. Learners strengthen understanding of portability and reproducibility.
+**Objective:** Create an optimized multi-stage Dockerfile to reduce build size, configure an HPA, and implement a ResourceQuota. Learners will connect image size to pod startup time and observe scaling mechanics.
 
-*(Refer to external lab documentation for full hands-on instructions).*
+> [!NOTE]
+>
+> [Lab: **Container Build Challenge**](https://git.generalassemb.ly/ai-systems-engineering-reliability/lab-10-container-build-challenge)
+> 
+> **Note**: Please refer to the dedicated [Lab Guide](https://git.generalassemb.ly/ai-systems-engineering-reliability/lab-10-container-build-challenge)
+ for full instructions, architectural constraints, and deliverables.
+
 
 ---
 
