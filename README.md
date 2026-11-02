@@ -181,9 +181,9 @@ resources:
 
 > [!NOTE]
 >
-> [Lab: **Container Build Challenge**](https://git.generalassemb.ly/ai-systems-engineering-reliability/lab-10-container-build-challenge)
+> [Lab: **Container Build Challenge**](https://github.com/ga-curriculum/lab-10-container-build-challenge)
 > 
-> **Note**: Please refer to the dedicated [Lab Guide](https://git.generalassemb.ly/ai-systems-engineering-reliability/lab-10-container-build-challenge)
+> **Note**: Please refer to the dedicated [Lab Guide](https://github.com/ga-curriculum/lab-10-container-build-challenge)
  for full instructions, architectural constraints, and deliverables.
 
 
